@@ -116,7 +116,6 @@ export function activate(context: vscode.ExtensionContext): void {
     configurationChanged();
 
     // Activate the validation server.
-    activateServer(context);
 
     // Create the window object that manages the various views.
     const gltfWindow = new GltfWindow(context);
