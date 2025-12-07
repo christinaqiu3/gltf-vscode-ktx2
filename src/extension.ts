@@ -116,6 +116,7 @@ export function activate(context: vscode.ExtensionContext): void {
     configurationChanged();
 
     // Activate the validation server.
+    //activateServer(context);
 
     // Create the window object that manages the various views.
     const gltfWindow = new GltfWindow(context);
@@ -240,9 +241,10 @@ export function activate(context: vscode.ExtensionContext): void {
     function exportToFile(filename: string, pathFilename: string, pointer, dataUri: string, textEditor: vscode.TextEditor) {
         const pos = dataUri.indexOf(',');
         const fileContents = Buffer.from(dataUri.substring(pos + 1), 'base64');
+        const uint8Array = new Uint8Array(fileContents);
 
         try {
-            fs.writeFileSync(pathFilename, fileContents);
+            fs.writeFileSync(pathFilename, uint8Array);
         } catch (ex) {
             vscode.window.showErrorMessage('Can\'t write file: ' + pathFilename);
             return;
@@ -837,7 +839,7 @@ export function activate(context: vscode.ExtensionContext): void {
         };
         let bufferOffset = alignedLength(bufferData.length);
 
-        const outputBuffers = [bufferData];
+        const outputBuffers: Buffer[] = [bufferData];
         if (bufferOffset !== bufferData.length) {
             outputBuffers.push(new Buffer(bufferOffset - bufferData.length));
         }
@@ -885,8 +887,9 @@ export function activate(context: vscode.ExtensionContext): void {
             bufferOffset += float32Values.byteLength;
             outputBuffers.push(Buffer.from(float32Values.buffer as ArrayBuffer));
         }
+        const uint8Buffers: Uint8Array[] = outputBuffers.map(b => new Uint8Array(b.buffer, b.byteOffset, b.byteLength));
 
-        const finalBuffer = Buffer.concat(outputBuffers);
+        const finalBuffer = Buffer.concat(uint8Buffers);
 
         bufferJson.uri = 'data:application/octet-stream;base64,' + finalBuffer.toString('base64');
         bufferJson.byteLength = finalBuffer.length;
