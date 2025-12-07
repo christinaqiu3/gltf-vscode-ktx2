@@ -18,7 +18,7 @@
         "vscode-uri": "^3.0.8"
     },
     "scripts": {
-        "preinstall": "touch installServerIntoExtension && rm installServerIntoExtension*",
+        "preinstall": "echo.> installServerIntoExtension && del installServerIntoExtension*",
         "installServer": "installServerIntoExtension .. ./package.json ./tsconfig.json",
         "compile": "installServerIntoExtension .. ./package.json ./tsconfig.json && tsc -p .",
         "watch": "installServerIntoExtension .. ./package.json ./tsconfig.json && tsc -w -p ."
