@@ -10,7 +10,8 @@ struct Params {
   channelR: f32,
   channelG: f32,
   channelB: f32,
-  channelA: f32
+  channelA: f32,
+  tonemapType: f32
 }
 
 @group(0) @binding(0) var<uniform> U : Params;
@@ -36,9 +37,45 @@ struct VSOut {
   return o;
 }
 
-fn aces_tonemap(x: vec3f) -> vec3f {
+
+// tonemapping fns
+
+const ACESInputMat = mat3x3f(
+  vec3f(0.59719, 0.07600, 0.02840),
+  vec3f(0.35458, 0.90834, 0.13383),
+  vec3f(0.04823, 0.01566, 0.83777)
+);
+const ACESOutputMat = mat3x3f(
+  vec3f(1.60475, -0.10208, -0.00327),
+  vec3f(-0.53108, 1.10813, -0.07276),
+  vec3f(-0.00327, -0.00605, 1.07602)
+);
+
+fn reinhard_tonemap(x: vec3f) -> vec3f {
+  let denom = max(vec3f(1e-6), vec3f(1.0) + x);
+  return x / denom;
+}
+fn hable_tonemap(x: vec3f) -> vec3f {
   let a=2.51; let b=0.03; let c=2.43; let d=0.59; let e=0.14;
   return clamp((x*(a*x + b)) / (x*(c*x + d) + e), vec3f(0.0), vec3f(1.0));
+}
+fn exposure_tonemap(x: vec3f) -> vec3f {
+  var remapped_col = x * U.exposureMul;
+  return clamp(remapped_col, vec3f(0.0), vec3f(1.0));
+}
+fn aces_tonemap(x: vec3f) -> vec3f {
+  // apply color transform matrix
+  var remapped_col = ACESInputMat * x;
+
+  // apply reference rendering transform (polynomial fit)
+  let a = remapped_col * (remapped_col + 0.0245786) - 0.000090537;
+  let b = remapped_col * 0.983729 + 0.4329510;
+  remapped_col = a / b;
+
+  // apply output device transform from ACES2065-1 to sRGB/Rec.709
+  remapped_col = ACESOutputMat * remapped_col;
+
+  return clamp(remapped_col, vec3f(0.0), vec3f(1.0));
 }
 
 @fragment fn fs_textured(@location(0) uv: vec2f) -> @location(0) vec4f {
@@ -54,10 +91,19 @@ fn aces_tonemap(x: vec3f) -> vec3f {
   // Alpha shows as grayscale, added to all channels
   c += vec3f(raw.a * U.channelA);
   
+  // Apply tonemapping
+  if (U.tonemapType == 1) {
+    c = reinhard_tonemap(c);
+  } else if (U.tonemapType == 2) {
+    c = hable_tonemap(c);
+  } else if (U.tonemapType == 3) {
+    c = aces_tonemap(c);
+  }
+
   // Apply exposure
-  c *= U.exposureMul;
+  c = exposure_tonemap(c);
   
-  let ldr = aces_tonemap(c);
+  let ldr = hable_tonemap(c);
   return vec4f(ldr, 1.0);
 }
 

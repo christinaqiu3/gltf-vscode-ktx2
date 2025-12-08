@@ -2,6 +2,16 @@
 
 <div id="log" style="width:100%; padding:6px 8px; background:#111; color:#ddd; font:12px monospace; border-radius:6px; box-sizing:border-box; margin-bottom:12px; max-height:120px; overflow-y:auto; display:none;"></div>
 
+<div style="margin-top:16px;">
+  <label for="tonemapSelect" style="color:#8cf;">Tonemapping:</label>
+  <select id="tonemapSelect" style="width:100%; margin-top:4px; background:#111; color:#ddd; border:1px solid #333; padding:4px;">
+    <option value="0">None</option>
+    <option value="1">Reinhard</option>
+    <option value="2">Hable(ACES Approximation)</option>
+    <option value="3">ACES2065-1</option>
+  </select>
+</div>
+
 <div style="margin-bottom:8px;">
   <label style="display:block; font-size:12px;">Exposure (EV)</label>
   <input id="ev" type="range" min="-10" max="10" step="0.1" value="0" style="width:100%" />
