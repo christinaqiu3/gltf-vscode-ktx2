@@ -1,6 +1,6 @@
 # Change Log
 
-### 2.6.0 - YYY-MM-DD
+### 2.6.0 - UNRELEASED
 
 * Added “Open KTX2 Viewer” button to the glTF preview panel.
 * Integrated a fully featured WebGPU-powered KTX2 viewer with:
